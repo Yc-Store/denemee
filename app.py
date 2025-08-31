@@ -2,25 +2,27 @@ from flask import Flask, request, jsonify, Response, render_template
 from ytmusicapi import YTMusic
 import yt_dlp
 import requests
-import os
 
 app = Flask(__name__)
 yt = YTMusic()
 
-# Ana sayfa
-'templates' klasörü içinde index.html olmalı
 @app.route('/')
 def index():
     return render_template('index.html')
 
-# Şarkı arama
 @app.route('/search')
 def search():
     query = request.args.get('q')
     results = yt.search(query, filter="songs")
-    return jsonify(results)
+    songs = []
+    for r in results:
+        songs.append({
+            "title": r['title'],
+            "videoId": r['videoId'],
+            "artists": ", ".join([a['name'] for a in r['artists']]) if 'artists' in r else "Unknown"
+        })
+    return jsonify(songs)
 
-# Proxy link üzerinden stream
 @app.route('/stream')
 def stream():
     video_id = request.args.get('id')
@@ -43,7 +45,6 @@ def stream():
                     yield chunk
 
     return Response(generate(), content_type='audio/mp4')
-
 
 if __name__ == '__main__':
     app.run(debug=True, host='0.0.0.0', port=5000)
