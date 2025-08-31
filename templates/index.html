@@ -1,0 +1,42 @@
+<!DOCTYPE html>
+<html lang="tr">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Müzik Çalar</title>
+</head>
+<body>
+  <h1>Çevrimiçi Müzik Çalar</h1>
+  <input type="text" id="searchBox" placeholder="Şarkı ara...">
+  <button onclick="searchSong()">Ara</button>
+
+  <ul id="results"></ul>
+
+  <audio id="player" controls autoplay></audio>
+
+  <script>
+    async function searchSong() {
+      const query = document.getElementById("searchBox").value;
+      const res = await fetch(`/search?q=${encodeURIComponent(query)}`);
+      const data = await res.json();
+
+      const results = document.getElementById("results");
+      results.innerHTML = "";
+
+      data.forEach(song => {
+        const li = document.createElement("li");
+        li.textContent = `${song.title} - ${song.artists}`;
+        li.style.cursor = "pointer";
+        li.onclick = () => playSong(song.videoId);
+        results.appendChild(li);
+      });
+    }
+
+    function playSong(videoId) {
+      const player = document.getElementById("player");
+      player.src = `/stream?id=${videoId}`;
+      player.play();
+    }
+  </script>
+</body>
+</html>
